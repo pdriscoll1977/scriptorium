@@ -1389,11 +1389,12 @@ function renderChars(){
 function renderMobile(){
   if(window.innerWidth>=768){
     ['mob-write','mob-scenes','mob-notes','mob-chars'].forEach(id=>document.getElementById(id).style.display='none');
-    document.getElementById('canvas-area').style.display='flex';
+    document.getElementById('mobile-tabbar').style.display='none';
     document.getElementById('body').style.display='flex';
+    document.getElementById('canvas-area').style.display=curView==='write'?'flex':'none';
     return;
   }
-  // On mobile hide the whole desktop body and use mob-* divs instead
+  document.getElementById('mobile-tabbar').style.display='flex';
   document.getElementById('body').style.display='none';
   document.getElementById('mob-write').style.display=mobTab==='write'?'flex':'none';
   document.getElementById('mob-scenes').style.display=mobTab==='scenes'?'flex':'none';
@@ -1490,7 +1491,11 @@ function setMobTab(tab){
 }document.querySelectorAll('.mob-tab').forEach(b=>b.addEventListener('click',()=>setMobTab(b.dataset.tab)));
 if(window.visualViewport){
   const initH=window.visualViewport.height;
-  window.visualViewport.addEventListener('resize',()=>{document.getElementById('mobile-tabbar').style.display=window.visualViewport.height<initH*.8?'none':'flex';});
+  window.visualViewport.addEventListener('resize',()=>{
+    if(window.innerWidth>=768)return; // never touch tabbar on desktop
+    const kb=window.visualViewport.height<initH*.8;
+    document.getElementById('mobile-tabbar').style.display=kb?'none':'flex';
+  });
 }
 window.addEventListener('resize',()=>renderMobile());
 
