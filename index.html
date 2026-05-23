@@ -627,13 +627,15 @@ body.theme-light{--bg:#f7f8fa;--surface:#eef0f4;--surface-hover:rgba(37,99,235,0
   <button class="mob-tab" data-tab="scenes"><span class="tab-icon">☰</span><span>Scenes</span></button>
   <button class="mob-tab" data-tab="chars"><span class="tab-icon">👤</span><span>Chars</span></button>
   <button class="mob-tab" data-tab="notes"><span class="tab-icon">📎</span><span>Notes</span></button>
-  <button class="mob-tab" data-tab="world"><span class="tab-icon">🌍</span><span>World</span></button>
+  <button class="mob-tab" data-tab="more"><span class="tab-icon">⋯</span><span>More</span></button>
 </div>
 <div id="mob-write" class="mob-full"></div>
 <div id="mob-scenes" class="mob-full"></div>
 <div id="mob-notes" class="mob-full"></div>
 <div id="mob-chars" class="mob-full"></div>
 <div id="mob-world" class="mob-full"></div>
+<div id="mob-synopsis" class="mob-full"></div>
+<div id="mob-more" class="mob-full"></div>
 
 <!-- CHARACTER HOVER CARD -->
 <div id="char-hover">
@@ -1460,7 +1462,7 @@ function renderChars(){
 // ══════════════════════════════════════════════
 function renderMobile(){
   if(window.innerWidth>=768){
-    ['mob-write','mob-scenes','mob-notes','mob-chars','mob-world'].forEach(id=>document.getElementById(id).style.display='none');
+    ['mob-write','mob-scenes','mob-notes','mob-chars','mob-world','mob-synopsis','mob-more'].forEach(id=>document.getElementById(id).style.display='none');
     document.getElementById('mobile-tabbar').style.display='none';
     document.getElementById('body').style.display='flex';
     document.getElementById('canvas-area').style.display=curView==='write'?'flex':'none';
@@ -1473,11 +1475,15 @@ function renderMobile(){
   document.getElementById('mob-notes').style.display=mobTab==='notes'?'flex':'none';
   document.getElementById('mob-chars').style.display=mobTab==='chars'?'flex':'none';
   document.getElementById('mob-world').style.display=mobTab==='world'?'flex':'none';
+  document.getElementById('mob-synopsis').style.display=mobTab==='synopsis'?'flex':'none';
+  document.getElementById('mob-more').style.display=mobTab==='more'?'flex':'none';
   if(mobTab==='write')renderMobWrite();
   if(mobTab==='scenes')renderMobScenes();
   if(mobTab==='notes')renderMobNotes();
   if(mobTab==='chars')renderMobChars();
   if(mobTab==='world')renderMobWorld();
+  if(mobTab==='synopsis')renderMobSynopsis();
+  if(mobTab==='more')renderMobMore();
 }
 function renderMobWrite(){
   const mw=document.getElementById('mob-write');
@@ -1914,6 +1920,97 @@ function renderMobWorldEdit(mw,item){
   mobField('Notes','notes',true,'Story role, significance…');
   panel.appendChild(scroll);mw.appendChild(panel);
 }
+// ── Mobile Synopsis ───────────────────────────
+function renderMobSynopsis(){
+  const ms=document.getElementById('mob-synopsis');ms.innerHTML='';
+  const hdr=el('div','mob-list-header');
+  const lbl=el('span');lbl.textContent='Synopsis';hdr.appendChild(lbl);ms.appendChild(hdr);
+  const scroll=el('div');scroll.style.cssText='overflow-y:auto;flex:1;padding:14px;';
+
+  // Series premise
+  function addSection(title,value,onInput,rows){
+    const sec=el('div');sec.style.marginBottom='18px';
+    const lbl=el('div');lbl.style.cssText='font-size:10px;font-weight:700;letter-spacing:.08em;color:var(--text-faint);text-transform:uppercase;margin-bottom:6px;';lbl.textContent=title;
+    const ta=el('textarea','mob-info-ta');ta.rows=rows||4;ta.value=value||'';
+    ta.style.cssText='width:100%;background:var(--canvas);border:1px solid var(--border);border-radius:8px;padding:10px 12px;color:var(--text);font-family:var(--font-body);font-size:16px;outline:none;resize:none;line-height:1.65;';
+    ta.oninput=()=>{onInput(ta.value);lsS(SYNK,syn);};
+    sec.append(lbl,ta);scroll.appendChild(sec);
+  }
+
+  if(!syn.premises)syn.premises={};
+  if(!syn.books)syn.books={};
+  if(!syn.chapters)syn.chapters={};
+
+  addSection('Series Premise',syn.premise,v=>{syn.premise=v;},4);
+
+  // Per-book synopses
+  for(const story of stories){
+    const storyLbl=el('div');storyLbl.style.cssText='font-size:12px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.08em;margin:8px 0 4px;';storyLbl.textContent=story.title;scroll.appendChild(storyLbl);
+    for(const book of(story.children||[])){
+      addSection('📖 '+book.title,syn.books[book.id],v=>{syn.books[book.id]=v;},4);
+      // Chapter synopses
+      for(const ch of(book.children||[])){
+        if(ch.children&&ch.children.length){
+          addSection('§ '+ch.title,syn.chapters[ch.id],v=>{syn.chapters[ch.id]=v;},3);
+        }
+      }
+    }
+  }
+  // Save button
+  const saveBtn=el('button');
+  saveBtn.style.cssText='width:100%;background:var(--accent);color:var(--accent-text);border:none;border-radius:8px;padding:12px;font-family:var(--font-body);font-size:15px;font-weight:700;cursor:pointer;margin-top:8px;';
+  saveBtn.textContent='💾 Save Synopses';
+  saveBtn.onclick=()=>{saveAll();toast('Saved ✓');};
+  scroll.appendChild(saveBtn);
+  ms.appendChild(scroll);
+}
+
+// ── Mobile More ───────────────────────────────
+function renderMobMore(){
+  const mm=document.getElementById('mob-more');mm.innerHTML='';
+  const hdr=el('div','mob-list-header');
+  const lbl=el('span');lbl.textContent='More';hdr.appendChild(lbl);mm.appendChild(hdr);
+  const scroll=el('div');scroll.style.cssText='overflow-y:auto;flex:1;padding:14px;';
+
+  function makeSection(title){
+    const s=el('div');s.style.cssText='font-size:10px;font-weight:700;letter-spacing:.08em;color:var(--text-faint);text-transform:uppercase;margin:16px 0 8px;';s.textContent=title;scroll.appendChild(s);
+  }
+  function makeBtn(label,icon,onclick,style){
+    const btn=el('button');
+    btn.style.cssText='width:100%;display:flex;align-items:center;gap:12px;background:var(--canvas);border:1px solid var(--border);border-radius:10px;padding:14px;font-family:var(--font-body);font-size:15px;color:var(--text);cursor:pointer;margin-bottom:10px;text-align:left;'+(style||'');
+    btn.innerHTML='<span style="font-size:22px">'+icon+'</span><span>'+label+'</span>';
+    btn.onclick=onclick;scroll.appendChild(btn);
+    return btn;
+  }
+
+  // Drive section
+  makeSection('Google Drive');
+  const isConnected=!!driveToken;
+  const driveStatusTxt=isConnected?'Connected — '+driveFolderName:'Not connected';
+  const statusEl=el('div');statusEl.style.cssText='font-size:13px;color:'+(isConnected?'var(--drive-ok)':'var(--text-faint)')+';margin-bottom:10px;padding:8px 12px;background:var(--canvas);border-radius:8px;border:1px solid var(--border-light);';
+  statusEl.textContent=(isConnected?'✓ ':'✗ ')+driveStatusTxt;
+  scroll.appendChild(statusEl);
+  if(isConnected){
+    makeBtn('Save to Drive now','💾',()=>{driveSave(false);});
+    makeBtn('Load from Drive','⬇',()=>{document.getElementById('drive-load-btn').click();});
+    makeBtn('Reconnect Drive','🔑',()=>{setTimeout(()=>doRedirectAuth(false),200);},'color:var(--text-muted);');
+  } else {
+    makeBtn('Connect Google Drive','🔑',()=>{setTimeout(()=>doRedirectAuth(false),200);},'background:var(--accent);color:var(--accent-text);border-color:var(--accent);font-weight:700;');
+  }
+
+  // Navigate
+  makeSection('Navigate');
+  makeBtn('World Elements','🌍',()=>setMobTab('world'));
+  makeBtn('Synopsis','📝',()=>setMobTab('synopsis'));
+
+  // Export
+  makeSection('Backup');
+  makeBtn('Export JSON','📤',()=>document.getElementById('local-export-btn').click());
+  makeBtn('Import JSON','📥',()=>document.getElementById('local-import-btn').click());
+
+  mm.appendChild(scroll);
+}
+
 function setMobTab(tab){
   mobTab=tab;
   document.querySelectorAll('.mob-tab').forEach(b=>b.classList.toggle('active',b.dataset.tab===tab));
@@ -2477,17 +2574,21 @@ document.getElementById('drive-btn').addEventListener('click',()=>{
 // ── Drive auth: popup on desktop, redirect on mobile ──
 const REDIRECT_URI=window.location.origin+window.location.pathname;
 const OAUTH_URL='https://accounts.google.com/o/oauth2/v2/auth';
+const TOKEN_EXPIRY_KEY='scrf-token-expiry';
 
 function isMobileDevice(){return /Android|iPhone|iPad|iPod/i.test(navigator.userAgent)||window.innerWidth<768;}
 
-function doRedirectAuth(){
-  // Save current Drive meta before leaving
+function doRedirectAuth(silent){
   const state=encodeURIComponent(JSON.stringify({redirect:true}));
   const params=new URLSearchParams({
     client_id:CLIENT_ID,redirect_uri:REDIRECT_URI,
     response_type:'token',scope:SCOPES,
-    state,include_granted_scopes:'true',prompt:'select_account'
+    state,include_granted_scopes:'true',
+    // silent=true tries without prompting; if account is already signed in it works transparently
+    prompt:silent?'none':'select_account'
   });
+  // Store that we're doing a silent redirect so we don't loop
+  if(silent)sessionStorage.setItem('scrf-silent-auth','1');
   window.location.href=OAUTH_URL+'?'+params.toString();
 }
 
@@ -2496,6 +2597,7 @@ function doPopupAuth(){
     const tc=window.google.accounts.oauth2.initTokenClient({client_id:CLIENT_ID,scope:SCOPES,callback:(resp)=>{
       if(resp.error){driveLog('Auth error: '+resp.error);return;}
       driveToken=resp.access_token;
+      lsS(TOKEN_EXPIRY_KEY,Date.now()+3500000); // ~58 min
       document.getElementById('drive-auth-status').style.display='inline';
       document.getElementById('drive-auth-btn').style.display='none';
       driveLog('Connected! Now choose a folder.');setDriveStatus('synced','Drive');
@@ -2505,39 +2607,54 @@ function doPopupAuth(){
   else init();
 }
 
-// Check for redirect token in URL hash (mobile return from Google)
+// ── Handle redirect token return from Google ──
 (function handleRedirectToken(){
   const hash=window.location.hash;
   if(!hash)return;
   const params=new URLSearchParams(hash.slice(1));
   const token=params.get('access_token');
-  if(!token)return;
-  driveToken=token;
-  // Clean the URL
   history.replaceState(null,'',window.location.pathname);
-  // Show connected state
+  const wasSilent=sessionStorage.getItem('scrf-silent-auth');
+  sessionStorage.removeItem('scrf-silent-auth');
+  if(!token){
+    // Silent auth failed (no account session) — don't loop, just wait for user to connect manually
+    return;
+  }
+  driveToken=token;
+  lsS(TOKEN_EXPIRY_KEY,Date.now()+3500000);
   setTimeout(()=>{
     const authBtn=document.getElementById('drive-auth-btn');
     const authStatus=document.getElementById('drive-auth-status');
     if(authBtn)authBtn.style.display='none';
     if(authStatus)authStatus.style.display='inline';
     setDriveStatus('synced','Drive');
-    driveLog('Connected via Google. Now choose a folder.');
-    // Auto-open drive modal so user can pick folder
-    document.getElementById('drive-modal').classList.add('open');
-    if(driveFolderName){
-      const fd=document.getElementById('drive-folder-display');
-      fd.textContent='📁 '+driveFolderName;fd.style.display='block';
-      driveLog('Reconnected. Folder: '+driveFolderName+'. You can save now.');
+    if(driveFolderName&&driveFolderId){
+      // Already have a folder — auto-save silently
+      driveLog('Reconnected to Drive. Auto-saving…');
+      driveSave(true);
+      if(!wasSilent)toast('Drive reconnected ✓');
+    } else {
+      // Need folder — only open modal if user explicitly connected
+      if(!wasSilent){
+        driveLog('Connected. Now choose a folder.');
+        document.getElementById('drive-modal').classList.add('open');
+      }
     }
   },300);
 })();
+
+// ── Save on visibility change (switching away from app) ──
+document.addEventListener('visibilitychange',()=>{
+  if(document.visibilityState==='hidden'&&driveToken&&driveFolderId){
+    driveSave(true);
+  }
+});
 
 document.getElementById('drive-auth-btn').addEventListener('click',()=>{
   if(!CLIENT_ID){driveLog('No OAuth Client ID configured.');return;}
   if(isMobileDevice()){
     driveLog('Redirecting to Google sign-in…');
-    setTimeout(doRedirectAuth,400);
+    setTimeout(()=>doRedirectAuth(false),400);
   } else {
     doPopupAuth();
   }
