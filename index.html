@@ -1850,7 +1850,7 @@ function renderMobWorld(){
   const hdr=el('div','mob-list-header');
   const lbl=el('span');lbl.textContent='World';
   const addBtn=el('button','mob-add-btn');addBtn.textContent='+ New';
-  addBtn.onclick=()=>{const item={id:uid(),name:'New Element',type:'Location',icon:'📍',description:'',notes:'',sceneIds:[]};if(!world)world=[];world.push(item);mobWorldEditId=item.id;saveAll();renderMobWorld();};
+  addBtn.onclick=()=>{const item={id:uid(),name:'New Element',type:'Location',icon:WORLD_TYPE_ICONS['Location'],description:'',notes:'',sceneIds:[]};if(!world)world=[];world.push(item);mobWorldEditId=item.id;saveAll();renderMobWorld();};
   hdr.append(lbl,addBtn);mw.appendChild(hdr);
   const scroll=el('div','mob-list-scroll');
   for(const item of(world||[])){
@@ -1879,7 +1879,7 @@ function renderMobWorldEdit(mw,item){
   // Icon picker
   const iconWrap=el('div','mob-field');
   const iconLbl=document.createElement('label');iconLbl.textContent='Icon (emoji)';
-  const iconInp=document.createElement('input');iconInp.type='text';iconInp.value=item.icon||'📍';iconInp.style.fontSize='24px';iconInp.style.textAlign='center';
+  const iconInp=document.createElement('input');iconInp.type='text';iconInp.id='mob-world-icon-inp';iconInp.value=item.icon||'📍';iconInp.style.fontSize='24px';iconInp.style.textAlign='center';
   iconInp.oninput=()=>{item.icon=iconInp.value;saveAll();};
   iconWrap.append(iconLbl,iconInp);scroll.appendChild(iconWrap);
   function mobField(label,key,multiline,ph,opts){
@@ -1890,7 +1890,17 @@ function renderMobWorldEdit(mw,item){
       opts.forEach(o=>{const op=document.createElement('option');op.value=o;op.textContent=o;if(o===item[key])op.selected=true;sel.appendChild(op);});
       sel.onchange=()=>{
         item[key]=sel.value;
-        world=world.map(w=>w.id===item.id?{...w,[key]:sel.value}:w);
+        // Auto-set icon when type changes if still on a default
+        if(key==='type'){
+          const defaultIcons=Object.values(WORLD_TYPE_ICONS).concat(['📍']);
+          if(!item.icon||defaultIcons.includes(item.icon)){
+            item.icon=WORLD_TYPE_ICONS[sel.value]||'📍';
+            // Update the icon input field if visible
+            const iconInp=document.getElementById('mob-world-icon-inp');
+            if(iconInp)iconInp.value=item.icon;
+          }
+        }
+        world=world.map(w=>w.id===item.id?{...w,[key]:sel.value,icon:item.icon}:w);
         lsS(WLK,world);scheduleAutoSave();
       };
       wrap.appendChild(sel);
@@ -2201,7 +2211,16 @@ function renderWorld(){
   const lbl2=el('span','char-field-label');lbl2.textContent='Type';topFields.appendChild(lbl2);
   const sel=document.createElement('select');sel.className='char-input';sel.style.cursor='pointer';
   WORLD_TYPES.forEach(t=>{const o=document.createElement('option');o.value=t;o.textContent=t;if(t===item.type)o.selected=true;sel.appendChild(o);});
-  sel.onchange=()=>{item.type=sel.value;if(!item.icon||item.icon===WORLD_TYPE_ICONS[Object.keys(WORLD_TYPE_ICONS).find(k=>k!==item.type)])item.icon=WORLD_TYPE_ICONS[item.type]||'📍';saveAll();renderWorld();};
+  sel.onchange=()=>{
+    item.type=sel.value;
+    // Auto-set icon if still on a default icon or the placeholder
+    const defaultIcons=Object.values(WORLD_TYPE_ICONS).concat(['📍']);
+    if(!item.icon||defaultIcons.includes(item.icon)){
+      item.icon=WORLD_TYPE_ICONS[item.type]||'📍';
+      iconWrap.textContent=item.icon;
+    }
+    saveAll();renderWorld();
+  };
   topFields.appendChild(sel);
   topRow.append(iconWrap,topFields);form.appendChild(topRow);
   function addField(label,key,multiline,ph){
@@ -2231,7 +2250,7 @@ document.querySelectorAll('.world-type-chip').forEach(chip=>{
 });
 
 document.getElementById('btn-add-world').addEventListener('click',()=>{
-  const item={id:uid(),name:'New Element',type:'Location',icon:'📍',description:'',notes:'',sceneIds:[]};
+  const item={id:uid(),name:'New Element',type:'Location',icon:WORLD_TYPE_ICONS['Location'],description:'',notes:'',sceneIds:[]};
   if(!world)world=[];world.push(item);selWorldId=item.id;saveAll();renderWorld();
 });
 
