@@ -199,6 +199,25 @@ body{font-family:var(--font-body);background:var(--bg);color:var(--text);height:
 .syn-ch-title{font-size:13px;font-weight:700;color:var(--text-muted);margin-bottom:5px;}
 .syn-ch-ta{width:100%;background:transparent;border:none;outline:none;resize:none;color:var(--text);font-family:var(--font-body);font-size:14px;line-height:1.75;min-height:70px;}
 
+/* SUBPLOTS */
+#subplots-area{flex:1;display:none;overflow:hidden;flex-direction:column;}
+#subplots-area.active{display:flex;flex-direction:column;}
+#subplots-scroll{flex:1;overflow-y:auto;padding:28px 32px 40px;}
+#subplots-wrap{max-width:760px;margin:0 auto;display:flex;flex-direction:column;gap:20px;}
+.subplot-card{background:var(--canvas);border:1px solid var(--canvas-border);border-radius:8px;padding:18px 22px;box-shadow:0 2px 10px var(--shadow);position:relative;}
+.subplot-card-header{display:flex;align-items:center;gap:10px;margin-bottom:12px;}
+.subplot-card-title{font-family:var(--font-display);font-size:13px;font-weight:600;color:var(--accent);letter-spacing:.06em;flex:1;background:transparent;border:none;outline:none;font-size:14px;color:var(--text);}
+.subplot-card-title::placeholder{color:var(--text-faint);font-style:italic;}
+.subplot-card-del{background:none;border:none;cursor:pointer;color:var(--text-faint);font-size:16px;padding:2px 5px;border-radius:4px;line-height:1;opacity:.5;}
+.subplot-card-del:hover{opacity:1;color:#c44;}
+.subplot-ta{width:100%;background:transparent;border:none;outline:none;resize:none;color:var(--text);font-family:var(--font-body);font-size:14px;line-height:1.75;min-height:100px;}
+.subplot-meta{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;}
+.subplot-tag{font-size:11px;padding:2px 8px;border-radius:10px;border:1px solid var(--border);background:transparent;color:var(--text-faint);cursor:pointer;font-family:var(--font-body);}
+.subplot-tag.active{background:var(--accent);color:var(--accent-text);border-color:var(--accent);}
+#subplots-empty{text-align:center;padding:60px 20px;color:var(--text-faint);font-style:italic;font-size:15px;opacity:.5;}
+#subplots-toolbar{display:flex;align-items:center;gap:10px;padding:10px 16px;background:var(--col-header);border-bottom:1px solid var(--border);flex-shrink:0;}
+
+
 /* TIMELINE */
 #timeline-area{flex:1;display:none;flex-direction:column;overflow:hidden;background:var(--bg);}
 #timeline-area.active{display:flex;}
@@ -316,6 +335,22 @@ body{font-family:var(--font-body);background:var(--bg);color:var(--text);height:
 #toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--text);color:var(--bg);padding:8px 18px;border-radius:20px;font-size:13px;opacity:0;transition:opacity .3s,transform .3s;pointer-events:none;z-index:3000;white-space:nowrap;}
 #toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
 
+/* PHOTO IMPORT */
+#photo-import-modal .modal-box{width:min(600px,96vw);}
+.photo-drop-zone{border:2px dashed var(--border);border-radius:10px;padding:32px;text-align:center;cursor:pointer;transition:background .15s,border-color .15s;margin-bottom:14px;}
+.photo-drop-zone:hover,.photo-drop-zone.drag-over{background:var(--surface-hover);border-color:var(--accent);}
+.photo-drop-zone .drop-icon{font-size:36px;margin-bottom:8px;}
+.photo-drop-zone p{font-size:13px;color:var(--text-muted);margin-bottom:6px;}
+.photo-drop-zone small{font-size:11px;color:var(--text-faint);}
+#photo-preview-img{max-width:100%;max-height:220px;border-radius:8px;border:1px solid var(--border);display:block;margin:0 auto 14px;}
+.import-result-box{background:var(--canvas);border:1px solid var(--border);border-radius:8px;padding:12px;margin-bottom:10px;}
+.import-result-box .result-label{font-size:10px;font-weight:700;letter-spacing:.08em;color:var(--text-faint);text-transform:uppercase;margin-bottom:6px;display:flex;align-items:center;gap:6px;}
+.result-label-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.result-label-dot.body{background:#5a8a3a;}
+.result-label-dot.margin{background:#8b2c0e;}
+.import-result-ta{width:100%;background:transparent;border:none;outline:none;resize:vertical;color:var(--text);font-family:var(--font-body);font-size:13px;line-height:1.65;min-height:80px;}
+.import-status{font-size:12px;color:var(--text-faint);font-style:italic;text-align:center;padding:8px 0;}
+
 /* MOBILE */
 #mobile-tabbar{display:none;border-top:1px solid var(--border);background:var(--header);flex-shrink:0;}
 .mob-tab{flex:1;padding:9px 4px 7px;background:transparent;border:none;cursor:pointer;font-family:var(--font-body);font-size:10px;display:flex;flex-direction:column;align-items:center;gap:2px;color:rgba(245,239,224,.5);}
@@ -393,12 +428,12 @@ body.theme-light{--bg:#f7f8fa;--surface:#eef0f4;--surface-hover:rgba(37,99,235,0
   #page-sizer{width:100%!important;transform:none!important;}
   #scene-textarea{font-size:16px;min-height:60vh;}
   body.focus-mode #mobile-tabbar{display:none;}
-  #plot-area,#plotgrid-area,#char-area,#synopsis-area,#timeline-area,#world-area{display:none!important;}
+  #plot-area,#plotgrid-area,#char-area,#synopsis-area,#subplots-area,#timeline-area,#world-area{display:none!important;}
 }
 </style>
 <link rel="icon" type="image/png" sizes="32x32" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAACyklEQVR4nNWXzWoUQRDHc4luzG6YzO7Ozu64WY3G3SR+4cFnEAVRUC8iIogH8QHyAD6CIPHiRTyIFy+exENOuQhePAi+hE9Q9q+na7b2QzEYaW0oeqq6uv71Nd0zCwv/43h+NZGX11fl1Y1UXt9M/QyP/K+BvriWyNtbqXy425L9B235/CiTrL4oH++1/AyPnHX00D8U4F0X1bs7TW+844A6jUXJHXUbR6S7YsjxyFlHD3327f5JVkjv3v0S2IM6oJ6jwtGzK8m3aSrCOnp5cIT92DkwOGn89DDzESmwAvWTo7I2h5CrjjrCfuxg70Dg1FSjVqOADFahmpyA0pqcTMsZfuCpdEb3aDaw91tOkC48ZpNG7SN2hgEBcB1qLskpQ/Dr6pDTQ18z0gtOYPeX5aBhfM1N5P2kjNgDN2se7HRrSTYCnWkfq56Rl86U+uxTJ7Qc2P9pY9K1NM588DEwoENHo2xM8OoMeujPdcLZB2cGnPeWV8emnjRacA/swDYdbXWWPW2HGULOOnrWCezYUoAzc07QIDZ6Golakk4FJ9LNAHo2X5ZzeV3e3G76GR4566MJJ0JPTGVhpiE5wTom+kGInpqS1qGCA9yty3lH792ePRcNMzxy1tFDfyP0RFmKcRbAAa8C5wzX9HOYaO3pao2e9BIhIBd6dblYNGTfdfXXJ7mf4ZF7J0I5qiyYXihMGaq7g4uE95TjdDL9Ifp2WXPSTKSAXTrekC+PO/J9p/AzPHLW0UN/GJoSOxNlcDjggesd4DbLputv0j8KTUetSTcRA3p5bUXkad/P8MhZR28r9IKWAXu2D8ADtzp8uNWsA1p/bT7SSsNRc9JO5IArwSNnHb1t04zaB9YB8KpDKXoGovdA9Lcg+jnwT5yE0e+C6LchI/r3gB5K0b6IbENG+ya0TkT7KrbliPZfoCPqn5Ed0f4N543D/Dv+AaW+XwB1vueoAAAAAElFTkSuQmCC">
 <link rel="apple-touch-icon" sizes="180x180" href="data:image/png;base64,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">
-<link rel="manifest" href="manifest.json">
+<link rel="manifest" href="data:application/manifest+json,{%22name%22:%22Scriptorium%22,%22short_name%22:%22Scriptorium%22,%22start_url%22:%22.%22,%22display%22:%22standalone%22,%22background_color%22:%22%233a2512%22,%22theme_color%22:%22%233a2512%22,%22icons%22:[]}">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="application-name" content="Scriptorium">
 </head>
@@ -409,6 +444,7 @@ body.theme-light{--bg:#f7f8fa;--surface:#eef0f4;--surface-hover:rgba(37,99,235,0
   <div id="view-tabs">
     <button class="view-tab active" data-view="write">Write</button>
     <button class="view-tab" data-view="synopsis">Synopsis</button>
+    <button class="view-tab" data-view="subplots">Subplots</button>
     <button class="view-tab" data-view="plot">Plot Board</button>
     <button class="view-tab" data-view="plotgrid">Plot Grid</button>
     <button class="view-tab" data-view="timeline">Timeline</button>
@@ -423,6 +459,8 @@ body.theme-light{--bg:#f7f8fa;--surface:#eef0f4;--surface-hover:rgba(37,99,235,0
   <button class="icon-btn" id="btn-focus" title="Focus">⊙</button>
   <div class="sep"></div>
   <button id="drive-btn"><span id="drive-dot"></span><span id="drive-label">Drive</span></button>
+  <div class="sep"></div>
+  <button class="icon-btn" id="btn-photo-import" title="Import handwritten notes from photo">📷</button>
   <div class="sep"></div>
   <button class="icon-btn" id="btn-theme">☀</button>
   <span class="theme-label" id="theme-label">Parchment</span>
@@ -523,6 +561,20 @@ body.theme-light{--bg:#f7f8fa;--surface:#eef0f4;--surface-hover:rgba(37,99,235,0
           <div class="syn-section-title">Chapter Synopses</div>
           <div id="syn-chapters"></div>
         </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SUBPLOTS -->
+  <div id="subplots-area">
+    <div id="subplots-toolbar">
+      <span style="font-size:12px;color:var(--text-muted);font-style:italic;">Side threads, margin ideas, running themes</span>
+      <div style="flex:1;"></div>
+      <button class="small-btn" id="btn-add-subplot">+ New Subplot</button>
+    </div>
+    <div id="subplots-scroll">
+      <div id="subplots-wrap">
+        <div id="subplots-empty" style="display:none;">No subplots yet. Add one above, or import a notebook photo — margin notes land here automatically.</div>
       </div>
     </div>
   </div>
@@ -635,6 +687,7 @@ body.theme-light{--bg:#f7f8fa;--surface:#eef0f4;--surface-hover:rgba(37,99,235,0
 <div id="mob-chars" class="mob-full"></div>
 <div id="mob-world" class="mob-full"></div>
 <div id="mob-synopsis" class="mob-full"></div>
+<div id="mob-subplots" class="mob-full"></div>
 <div id="mob-more" class="mob-full"></div>
 
 <!-- CHARACTER HOVER CARD -->
@@ -715,6 +768,48 @@ body.theme-light{--bg:#f7f8fa;--surface:#eef0f4;--surface-hover:rgba(37,99,235,0
   </div>
 </div>
 
+<!-- PHOTO IMPORT MODAL -->
+<div class="modal-overlay" id="photo-import-modal">
+  <div class="modal-box wide" id="photo-import-modal">
+    <div class="modal-title"><span>📷 Import Handwritten Notes</span><button class="modal-close" id="photo-modal-close">×</button></div>
+    <div id="photo-import-step-1">
+      <div class="photo-drop-zone" id="photo-drop-zone">
+        <div class="drop-icon">📸</div>
+        <p>Tap to choose a photo of your notebook page</p>
+        <small>Works best with a clear, well-lit photo — like the one you just showed me</small>
+      </div>
+      <input type="file" id="photo-file-input" accept="image/*" capture="environment" style="display:none">
+    </div>
+    <div id="photo-import-step-2" style="display:none">
+      <img id="photo-preview-img" src="" alt="Preview">
+      <div class="import-status" id="import-status">Reading your handwriting…</div>
+      <div id="import-results" style="display:none">
+        <div class="import-result-box">
+          <div class="result-label"><span class="result-label-dot body"></span>Main Text — send to:</div>
+          <select class="minput" id="import-dest-sel" style="margin-bottom:8px;font-size:13px;">
+            <option value="note">New Note (Notes panel)</option>
+            <option value="synopsis_premise">Synopsis — Series Premise</option>
+            <option value="synopsis_book">Synopsis — Current Book</option>
+            <option value="scene">Current Scene (writing canvas)</option>
+            <option value="subplot">New Subplot</option>
+            <option value="discard">Don't save main text</option>
+          </select>
+          <textarea class="import-result-ta" id="import-body-ta" placeholder="Transcribed body text will appear here…"></textarea>
+        </div>
+        <div class="import-result-box">
+          <div class="result-label"><span class="result-label-dot margin"></span>Margin Notes → Subplots tab + Notes panel</div>
+          <textarea class="import-result-ta" id="import-margin-ta" placeholder="Margin annotations will appear here — or leave blank if none…"></textarea>
+        </div>
+        <div style="font-size:12px;color:var(--text-faint);margin-bottom:10px;">Edit above before saving.</div>
+        <div class="mbtn-row">
+          <button class="mbtn secondary" id="import-retry-btn">↩ Try another photo</button>
+          <button class="mbtn primary" id="import-save-btn">Save</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div id="toast"></div>
 
 <script>
@@ -725,7 +820,7 @@ const CLIENT_ID='645135129548-hjijbb7btjtvudfjs1nskhn21vgkhq5a.apps.googleuserco
 const SCOPES='https://www.googleapis.com/auth/drive.file';
 const DRIVE_FILE_NAME='scriptorium-backup.json';
 const DRIVE_META_KEY='scrf-drive-meta';
-const SK='scrf_stories', CK='scrf_chars', PLK='scrf_plotlines', COLK='scrf_cols', CARDK='scrf_cards', NK='scrf_notes', TK='scrf_theme', CWK='scrf_cw', WLK='scrf_world', SYNK='scrf_syn';
+const SK='scrf_stories', CK='scrf_chars', PLK='scrf_plotlines', COLK='scrf_cols', CARDK='scrf_cards', NK='scrf_notes', TK='scrf_theme', CWK='scrf_cw', WLK='scrf_world', SYNK='scrf_syn', SPLK='scrf_subplots';
 
 // ══════════════════════════════════════════════
 // DEFAULT DATA
@@ -793,6 +888,7 @@ let plotCards=lsG(CARDK,DEF_CARDS);
 let notes=lsG(NK,DEF_NOTES);
 let world=lsG(WLK,DEF_WORLD);
 let syn=lsG(SYNK,DEF_SYN);
+let subplots=lsG(SPLK,[]);
 let themeIdx=lsG(TK,0);
 let canvasWidth=lsG(CWK,660);
 let selWorldId=null;
@@ -824,16 +920,17 @@ function getLastSave(){try{const m=JSON.parse(localStorage.getItem(DRIVE_META_KE
 function saveAll(){
   lsS(SK,stories);lsS(CK,chars);lsS(PLK,plotLines);
   lsS(COLK,plotCols);lsS(CARDK,plotCards);lsS(NK,notes);
-  lsS(WLK,world);lsS(SYNK,syn);
+  lsS(WLK,world);lsS(SYNK,syn);lsS(SPLK,subplots);
   lsS(TK,themeIdx);lsS(CWK,canvasWidth);
 }
-function getAppData(){return{stories,chars,plotLines,plotCols,plotCards,notes,world,syn,canvasWidth,themeIdx};}
+function getAppData(){return{stories,chars,plotLines,plotCols,plotCards,notes,world,syn,subplots,canvasWidth,themeIdx};}
 function setAppData(d){
   if(d.stories)stories=d.stories;if(d.chars)chars=d.chars;
   if(d.plotLines)plotLines=d.plotLines;if(d.plotCols)plotCols=d.plotCols;
   if(d.plotCards)plotCards=d.plotCards;if(d.notes)notes=d.notes;
   if(d.world)world=d.world;else if(d.locs)world=d.locs;
   if(d.syn)syn=d.syn;
+  if(d.subplots)subplots=d.subplots;
   if(d.canvasWidth)canvasWidth=d.canvasWidth;
   if(typeof d.themeIdx==='number'){themeIdx=d.themeIdx;applyTheme();}
   saveAll();render();
@@ -862,6 +959,7 @@ function render(){
   renderTree();renderNotes();renderCanvas();renderMobile();updateWC();
   if(curView==='write')renderScenePanel();
   if(curView==='synopsis')renderSynopsis();
+  if(curView==='subplots')renderSubplots();
   if(curView==='plot')renderBoard();
   if(curView==='plotgrid')renderPlotGrid();
   if(curView==='timeline')renderTimeline();
@@ -1462,7 +1560,7 @@ function renderChars(){
 // ══════════════════════════════════════════════
 function renderMobile(){
   if(window.innerWidth>=768){
-    ['mob-write','mob-scenes','mob-notes','mob-chars','mob-world','mob-synopsis','mob-more'].forEach(id=>document.getElementById(id).style.display='none');
+    ['mob-write','mob-scenes','mob-notes','mob-chars','mob-world','mob-synopsis','mob-subplots','mob-more'].forEach(id=>document.getElementById(id).style.display='none');
     document.getElementById('mobile-tabbar').style.display='none';
     document.getElementById('body').style.display='flex';
     document.getElementById('canvas-area').style.display=curView==='write'?'flex':'none';
@@ -1476,6 +1574,7 @@ function renderMobile(){
   document.getElementById('mob-chars').style.display=mobTab==='chars'?'flex':'none';
   document.getElementById('mob-world').style.display=mobTab==='world'?'flex':'none';
   document.getElementById('mob-synopsis').style.display=mobTab==='synopsis'?'flex':'none';
+  document.getElementById('mob-subplots').style.display=mobTab==='subplots'?'flex':'none';
   document.getElementById('mob-more').style.display=mobTab==='more'?'flex':'none';
   if(mobTab==='write')renderMobWrite();
   if(mobTab==='scenes')renderMobScenes();
@@ -1483,6 +1582,7 @@ function renderMobile(){
   if(mobTab==='chars')renderMobChars();
   if(mobTab==='world')renderMobWorld();
   if(mobTab==='synopsis')renderMobSynopsis();
+  if(mobTab==='subplots')renderMobSubplots();
   if(mobTab==='more')renderMobMore();
 }
 function renderMobWrite(){
@@ -1975,6 +2075,76 @@ function renderMobSynopsis(){
   ms.appendChild(scroll);
 }
 
+// ── Mobile Subplots ───────────────────────────
+function renderMobSubplots(){
+  const ms=document.getElementById('mob-subplots');ms.innerHTML='';
+  const hdr=el('div','mob-list-header');
+  const lbl=el('span');lbl.textContent='Subplots & Side Notes';hdr.appendChild(lbl);
+  const addBtn=el('button','mob-add-btn');addBtn.textContent='+ New';
+  addBtn.onclick=()=>{
+    const sp={id:uid(),title:'',content:'',tags:[]};
+    subplots.push(sp);saveAll();renderMobSubplots();
+    // scroll to bottom and focus new card
+    setTimeout(()=>{ms.scrollTop=ms.scrollHeight;},50);
+  };
+  hdr.appendChild(addBtn);ms.appendChild(hdr);
+
+  if(!subplots||!subplots.length){
+    const empty=el('div');
+    empty.style.cssText='flex:1;display:flex;align-items:center;justify-content:center;padding:40px;text-align:center;color:var(--text-faint);font-style:italic;font-size:15px;opacity:.6;';
+    empty.textContent='No subplots yet. Add one above, or import a notebook photo — margin notes land here automatically.';
+    ms.appendChild(empty);return;
+  }
+
+  const scroll=el('div');scroll.style.cssText='overflow-y:auto;flex:1;padding:12px;display:flex;flex-direction:column;gap:12px;';
+
+  for(const sp of subplots){
+    const card=el('div');
+    card.style.cssText='background:var(--canvas);border:1px solid var(--border);border-radius:10px;padding:14px;';
+
+    // Title
+    const titleInp=document.createElement('input');
+    titleInp.type='text';titleInp.placeholder='Subplot title…';titleInp.value=sp.title||'';
+    titleInp.style.cssText='width:100%;background:transparent;border:none;border-bottom:1px solid var(--border-light);outline:none;color:var(--text);font-family:var(--font-body);font-size:16px;font-weight:600;padding-bottom:6px;margin-bottom:10px;';
+    titleInp.oninput=()=>{sp.title=titleInp.value;saveAll();};
+    card.appendChild(titleInp);
+
+    // Body
+    const ta=document.createElement('textarea');
+    ta.placeholder='Notes, threads, ideas…';ta.value=sp.content||'';ta.rows=4;
+    ta.style.cssText='width:100%;background:transparent;border:none;outline:none;resize:none;color:var(--text);font-family:var(--font-body);font-size:15px;line-height:1.65;';
+    ta.oninput=()=>{sp.content=ta.value;saveAll();};
+    card.appendChild(ta);
+
+    // Tags
+    const tagRow=el('div');tagRow.style.cssText='display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;';
+    for(const tag of ['Ongoing','Resolved','Paused','Worldbuilding','Character','Plot','Motif']){
+      const btn=el('button');
+      btn.textContent=tag;
+      const active=(sp.tags||[]).includes(tag);
+      btn.style.cssText='font-size:11px;padding:3px 9px;border-radius:12px;border:1px solid var(--border);background:'+(active?'var(--accent)':'transparent')+';color:'+(active?'var(--accent-text)':'var(--text-faint)')+';font-family:var(--font-body);cursor:pointer;';
+      btn.onclick=()=>{
+        if(!sp.tags)sp.tags=[];
+        if(sp.tags.includes(tag)){sp.tags=sp.tags.filter(t=>t!==tag);}
+        else{sp.tags.push(tag);}
+        saveAll();renderMobSubplots();
+      };
+      tagRow.appendChild(btn);
+    }
+    card.appendChild(tagRow);
+
+    // Delete button
+    const delBtn=el('button');
+    delBtn.textContent='Delete subplot';
+    delBtn.style.cssText='margin-top:10px;background:none;border:none;color:#c44;font-family:var(--font-body);font-size:13px;cursor:pointer;padding:0;';
+    delBtn.onclick=()=>{if(confirm('Delete this subplot?')){subplots=subplots.filter(x=>x.id!==sp.id);saveAll();renderMobSubplots();}};
+    card.appendChild(delBtn);
+
+    scroll.appendChild(card);
+  }
+  ms.appendChild(scroll);
+}
+
 // ── Mobile More ───────────────────────────────
 function renderMobMore(){
   const mm=document.getElementById('mob-more');mm.innerHTML='';
@@ -2010,8 +2180,10 @@ function renderMobMore(){
 
   // Navigate
   makeSection('Navigate');
+  makeBtn('Subplots & Side Notes','🧵',()=>setMobTab('subplots'));
   makeBtn('World Elements','🌍',()=>setMobTab('world'));
   makeBtn('Synopsis','📝',()=>setMobTab('synopsis'));
+  makeBtn('Import Notebook Photo','📷',()=>openPhotoModal());
 
   // Export
   makeSection('Backup');
@@ -2089,6 +2261,68 @@ function renderChapterSynopses(bookId){
   }
   if(!book.children||!book.children.length)cont.innerHTML='<div style="color:var(--text-faint);font-style:italic;font-size:13px;">No chapters yet. Add chapters in the Structure panel.</div>';
 }
+
+// ══════════════════════════════════════════════
+// SUBPLOTS
+// ══════════════════════════════════════════════
+const SUBPLOT_TAGS=['Ongoing','Resolved','Paused','Worldbuilding','Character','Plot','Motif'];
+
+function renderSubplots(){
+  const wrap=document.getElementById('subplots-wrap');
+  wrap.innerHTML='';
+  const empty=el('div');empty.id='subplots-empty';
+  empty.style.cssText='text-align:center;padding:60px 20px;color:var(--text-faint);font-style:italic;font-size:15px;opacity:.5;';
+  empty.textContent='No subplots yet. Add one above, or import a notebook photo — margin notes land here automatically.';
+
+  if(!subplots||!subplots.length){wrap.appendChild(empty);return;}
+
+  for(const sp of subplots){
+    const card=el('div','subplot-card');
+
+    // Header row: title input + delete
+    const hdr=el('div','subplot-card-header');
+    const titleInp=el('input','subplot-card-title');
+    titleInp.type='text';titleInp.placeholder='Subplot title…';titleInp.value=sp.title||'';
+    titleInp.oninput=()=>{sp.title=titleInp.value;saveAll();scheduleAutoSave();};
+    const delBtn=el('button','subplot-card-del');delBtn.textContent='×';delBtn.title='Delete subplot';
+    delBtn.onclick=()=>{if(confirm('Delete this subplot?')){subplots=subplots.filter(x=>x.id!==sp.id);saveAll();renderSubplots();}};
+    hdr.append(titleInp,delBtn);card.appendChild(hdr);
+
+    // Body textarea
+    const ta=el('textarea','subplot-ta');
+    ta.placeholder='Notes, threads, ideas for this subplot…';
+    ta.value=sp.content||'';
+    ta.oninput=()=>{sp.content=ta.value;saveAll();scheduleAutoSave();};
+    card.appendChild(ta);
+
+    // Tags
+    const tagRow=el('div','subplot-meta');
+    for(const tag of SUBPLOT_TAGS){
+      const btn=el('button','subplot-tag'+(( sp.tags||[]).includes(tag)?' active':''));
+      btn.textContent=tag;
+      btn.onclick=()=>{
+        if(!sp.tags)sp.tags=[];
+        if(sp.tags.includes(tag)){sp.tags=sp.tags.filter(t=>t!==tag);btn.classList.remove('active');}
+        else{sp.tags.push(tag);btn.classList.add('active');}
+        saveAll();scheduleAutoSave();
+      };
+      tagRow.appendChild(btn);
+    }
+    card.appendChild(tagRow);
+    wrap.appendChild(card);
+  }
+}
+
+document.getElementById('btn-add-subplot').addEventListener('click',()=>{
+  const sp={id:uid(),title:'',content:'',tags:[]};
+  subplots.push(sp);saveAll();
+  switchView('subplots');
+  // Focus the new card's title after render
+  setTimeout(()=>{
+    const cards=document.querySelectorAll('.subplot-card-title');
+    if(cards.length)cards[cards.length-1].focus();
+  },50);
+});
 
 // ══════════════════════════════════════════════
 // TIMELINE
@@ -2359,6 +2593,7 @@ function switchView(v){
   curView=v;
   document.getElementById('canvas-area').style.display=v==='write'?'flex':'none';
   document.getElementById('synopsis-area').classList.toggle('active',v==='synopsis');
+  document.getElementById('subplots-area').classList.toggle('active',v==='subplots');
   document.getElementById('plot-area').classList.toggle('active',v==='plot');
   document.getElementById('plotgrid-area').classList.toggle('active',v==='plotgrid');
   document.getElementById('timeline-area').classList.toggle('active',v==='timeline');
@@ -2368,6 +2603,7 @@ function switchView(v){
   document.querySelectorAll('.view-tab').forEach(t=>t.classList.toggle('active',t.dataset.view===v));
   if(v==='write')renderScenePanel();
   if(v==='synopsis')renderSynopsis();
+  if(v==='subplots')renderSubplots();
   if(v==='plot')renderBoard();
   if(v==='plotgrid')renderPlotGrid();
   if(v==='timeline')renderTimeline();
@@ -2758,6 +2994,206 @@ document.getElementById('import-file-input').addEventListener('change',function(
   reader.onload=e=>{try{setAppData(JSON.parse(e.target.result));toast('Imported ✓');closeModal('drive-modal');}catch{driveLog('Invalid file.');}};
   reader.readAsText(file);
 });
+
+// ══════════════════════════════════════════════
+// PHOTO IMPORT — handwritten notes → Notes panel
+// ══════════════════════════════════════════════
+(function(){
+  const ANTHROPIC_API='https://api.anthropic.com/v1/messages';
+
+  function openPhotoModal(){
+    document.getElementById('photo-import-modal').classList.add('open');
+    resetToStep1();
+  }
+  function closePhotoModal(){
+    document.getElementById('photo-import-modal').classList.remove('open');
+  }
+  function resetToStep1(){
+    document.getElementById('photo-import-step-1').style.display='';
+    document.getElementById('photo-import-step-2').style.display='none';
+    document.getElementById('import-results').style.display='none';
+    document.getElementById('photo-file-input').value='';
+  }
+
+  document.getElementById('btn-photo-import').addEventListener('click', openPhotoModal);
+  document.getElementById('photo-modal-close').addEventListener('click', closePhotoModal);
+  document.getElementById('import-retry-btn').addEventListener('click', resetToStep1);
+
+  // Click drop zone → trigger file picker
+  document.getElementById('photo-drop-zone').addEventListener('click',()=>{
+    document.getElementById('photo-file-input').click();
+  });
+
+  // Drag-over styling
+  const dz=document.getElementById('photo-drop-zone');
+  dz.addEventListener('dragover',e=>{e.preventDefault();dz.classList.add('drag-over');});
+  dz.addEventListener('dragleave',()=>dz.classList.remove('drag-over'));
+  dz.addEventListener('drop',e=>{
+    e.preventDefault();dz.classList.remove('drag-over');
+    const file=e.dataTransfer.files[0];
+    if(file&&file.type.startsWith('image/'))processImage(file);
+  });
+
+  document.getElementById('photo-file-input').addEventListener('change',function(){
+    const file=this.files[0];
+    if(file)processImage(file);
+  });
+
+  function processImage(file){
+    const reader=new FileReader();
+    reader.onload=async(e)=>{
+      const dataUrl=e.target.result;
+      const base64=dataUrl.split(',')[1];
+      const mimeType=file.type||'image/jpeg';
+
+      // Show preview
+      document.getElementById('photo-preview-img').src=dataUrl;
+      document.getElementById('photo-import-step-1').style.display='none';
+      document.getElementById('photo-import-step-2').style.display='';
+      document.getElementById('import-status').textContent='Reading your handwriting…';
+      document.getElementById('import-results').style.display='none';
+
+      try{
+        const resp=await fetch(ANTHROPIC_API,{
+          method:'POST',
+          headers:{'Content-Type':'application/json'},
+          body:JSON.stringify({
+            model:'claude-sonnet-4-20250514',
+            max_tokens:1000,
+            messages:[{
+              role:'user',
+              content:[
+                {
+                  type:'image',
+                  source:{type:'base64',media_type:mimeType,data:base64}
+                },
+                {
+                  type:'text',
+                  text:`You are transcribing a handwritten notebook page from a historical fantasy novelist.
+
+The page typically has:
+- MAIN BODY TEXT written in one colour (the primary narrative/synopsis/notes)  
+- MARGIN ANNOTATIONS written in a different colour (short clarifying notes, numbered asides, worldbuilding details)
+
+Please transcribe the page and separate the two streams.
+
+Respond ONLY with a JSON object — no preamble, no markdown fences — in exactly this format:
+{
+  "bodyText": "The full transcribed main body text, preserving paragraph breaks with \\n\\n",
+  "marginNotes": "The margin annotations, each on its own line, preserving any numbering"
+}
+
+If you cannot clearly distinguish body from margin text, put everything in bodyText and leave marginNotes empty.
+If the image is not a handwritten notebook page, set bodyText to a brief description and marginNotes to "".`
+                }
+              ]
+            }]
+          })
+        });
+
+        const data=await resp.json();
+        if(data.error){throw new Error(data.error.message||'API error');}
+
+        // Extract text content
+        const rawText=data.content.filter(b=>b.type==='text').map(b=>b.text).join('');
+
+        let parsed;
+        try{
+          // Strip any accidental markdown fences
+          const clean=rawText.replace(/```json|```/g,'').trim();
+          parsed=JSON.parse(clean);
+        }catch{
+          // Fallback: put everything in bodyText
+          parsed={bodyText:rawText,marginNotes:''};
+        }
+
+        document.getElementById('import-body-ta').value=parsed.bodyText||'';
+        document.getElementById('import-margin-ta').value=parsed.marginNotes||'';
+        document.getElementById('import-status').textContent='';
+        document.getElementById('import-results').style.display='';
+
+      }catch(err){
+        document.getElementById('import-status').textContent='⚠ '+err.message;
+      }
+    };
+    reader.readAsDataURL(file);
+  }
+
+  document.getElementById('import-save-btn').addEventListener('click',()=>{
+    const bodyText=document.getElementById('import-body-ta').value.trim();
+    const marginText=document.getElementById('import-margin-ta').value.trim();
+    const dest=document.getElementById('import-dest-sel').value;
+    if(!bodyText&&!marginText){toast('Nothing to save.');return;}
+
+    const dateStr=new Date().toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});
+    let toasts=[];
+
+    // ── Route body text ──
+    if(bodyText&&dest!=='discard'){
+      if(dest==='note'){
+        notes.push({id:uid(),title:'Notes — '+dateStr,content:bodyText});
+        toasts.push('note saved');
+      } else if(dest==='synopsis_premise'){
+        syn.premise=(syn.premise?syn.premise+'\n\n':'')+bodyText;
+        lsS(SYNK,syn);
+        toasts.push('added to Series Premise');
+      } else if(dest==='synopsis_book'){
+        // append to currently selected book synopsis
+        const books=getAllBooks();
+        if(books.length){
+          const bid=books[0].book.id; // fallback: first book
+          const bSel=document.getElementById('syn-book-sel');
+          const activeBid=bSel&&bSel.value?bSel.value:bid;
+          if(!syn.books)syn.books={};
+          syn.books[activeBid]=(syn.books[activeBid]?syn.books[activeBid]+'\n\n':'')+bodyText;
+          lsS(SYNK,syn);
+          toasts.push('added to book synopsis');
+        }
+      } else if(dest==='scene'){
+        if(selSceneId){
+          const sc=findNode(stories,selSceneId);
+          if(sc){
+            const existing=sc.content||'';
+            const newContent=existing+(existing?'<p><br></p>':'')+'<p>'+bodyText.replace(/\n\n/g,'</p><p>').replace(/\n/g,'<br>')+'</p>';
+            stories=updateNode(stories,selSceneId,()=>({content:newContent,wordCount:cw(sc.content||'')+cw(bodyText)}));
+            toasts.push('added to scene');
+          } else {
+            toast('No scene open — saved as note instead.');
+            notes.push({id:uid(),title:'Notes — '+dateStr,content:bodyText});
+          }
+        } else {
+          toast('No scene open — saved as note instead.');
+          notes.push({id:uid(),title:'Notes — '+dateStr,content:bodyText});
+        }
+      } else if(dest==='subplot'){
+        subplots.push({id:uid(),title:'From notebook — '+dateStr,content:bodyText,tags:[]});
+        toasts.push('new subplot created');
+      }
+    }
+
+    // ── Route margin notes → Subplots tab + Notes panel ──
+    if(marginText){
+      subplots.push({id:uid(),title:'Margin Notes — '+dateStr,content:marginText,tags:['Plot']});
+      notes.push({id:uid(),title:'Margin Notes — '+dateStr,content:marginText});
+      toasts.push('margin notes → subplots & notes');
+    }
+
+    saveAll();render();
+    closePhotoModal();
+    toast(toasts.length?toasts.join(', ')+' ✓':'Saved ✓');
+
+    // Navigate to where body text went
+    if(dest==='synopsis_premise'||dest==='synopsis_book') switchView('synopsis');
+    else if(dest==='subplot') switchView('subplots');
+    else if(marginText&&dest==='discard') switchView('subplots');
+    else {
+      // Show Notes panel
+      const rpTab=document.querySelector('.rp-tab[data-rp="notes"]');
+      if(rpTab)rpTab.click();
+    }
+  });
+
+})();
 
 // ══════════════════════════════════════════════
 // TOAST
