@@ -335,7 +335,18 @@ body{font-family:var(--font-body);background:var(--bg);color:var(--text);height:
 #toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--text);color:var(--bg);padding:8px 18px;border-radius:20px;font-size:13px;opacity:0;transition:opacity .3s,transform .3s;pointer-events:none;z-index:3000;white-space:nowrap;}
 #toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
 
-/* PHOTO IMPORT */
+/* DICTATION */
+#dictate-modal .modal-box{width:min(520px,96vw);}
+#dictate-orb{width:72px;height:72px;border-radius:50%;background:var(--accent);border:none;cursor:pointer;font-size:28px;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;transition:transform .15s,box-shadow .15s;box-shadow:0 0 0 0 rgba(var(--accent-rgb),.4);}
+#dictate-orb.recording{animation:pulse-ring 1.2s ease-out infinite;background:#c44;}
+@keyframes pulse-ring{0%{box-shadow:0 0 0 0 rgba(200,60,60,.5);}70%{box-shadow:0 0 0 18px rgba(200,60,60,0);}100%{box-shadow:0 0 0 0 rgba(200,60,60,0);}}
+#dictate-status{text-align:center;font-size:13px;color:var(--text-faint);font-style:italic;margin-bottom:12px;min-height:20px;}
+#dictate-raw-box{display:none;background:var(--canvas);border:1px solid var(--border);border-radius:8px;padding:10px;margin-bottom:8px;font-size:12px;color:var(--text-faint);font-style:italic;max-height:80px;overflow-y:auto;}
+#dictate-raw-label{font-size:10px;font-weight:700;letter-spacing:.08em;color:var(--text-faint);text-transform:uppercase;margin-bottom:4px;}
+#dictate-result-box{display:none;}
+#dictate-result-ta{width:100%;background:var(--canvas);border:1px solid var(--border);border-radius:8px;padding:12px;color:var(--text);font-family:var(--font-body);font-size:14px;line-height:1.75;min-height:120px;resize:vertical;outline:none;margin-bottom:10px;}
+#dictate-cleaning{text-align:center;padding:12px;color:var(--text-faint);font-style:italic;font-size:13px;display:none;}
+
 #photo-import-modal .modal-box{width:min(600px,96vw);}
 .photo-drop-zone{border:2px dashed var(--border);border-radius:10px;padding:32px;text-align:center;cursor:pointer;transition:background .15s,border-color .15s;margin-bottom:14px;}
 .photo-drop-zone:hover,.photo-drop-zone.drag-over{background:var(--surface-hover);border-color:var(--accent);}
@@ -509,7 +520,10 @@ body.theme-light{--bg:#f7f8fa;--surface:#eef0f4;--surface-hover:rgba(37,99,235,0
         <option value="24">Large gap</option>
       </select>
       <div class="fmt-sep"></div>
-      <button class="fmt-toggle" id="fmt-smartquotes" title="Smart quotes (British style)" onclick="toggleSmartQuotes()">'' Smart quotes</button>
+      <button class="fmt-toggle active" id="fmt-smartquotes" title="Smart quotes (British style)" onclick="toggleSmartQuotes()">'' Smart quotes</button>
+      <button class="fmt-btn" id="fmt-convert-quotes" title="Convert all straight quotes in this scene to curly quotes" onclick="convertExistingQuotes()" style="font-size:11px;padding:3px 7px;">' → '</button>
+      <div class="fmt-sep"></div>
+      <button class="fmt-btn" id="btn-dictate" title="Dictate — speech to text">🎙</button>
     </div>
     <div id="canvas-scroll">
       <div id="page-sizer">
@@ -764,6 +778,34 @@ body.theme-light{--bg:#f7f8fa;--surface:#eef0f4;--surface-hover:rgba(37,99,235,0
         <button class="mbtn secondary" id="local-import-btn">Import JSON</button>
       </div>
       <input type="file" id="import-file-input" accept=".json" style="display:none">
+    </div>
+  </div>
+</div>
+
+<!-- DICTATION MODAL -->
+<div class="modal-overlay" id="dictate-modal">
+  <div class="modal-box">
+    <div class="modal-title"><span>🎙 Dictate</span><button class="modal-close" id="dictate-modal-close">×</button></div>
+    <button id="dictate-orb" title="Tap to start recording">🎙</button>
+    <div id="dictate-status">Tap the microphone to begin</div>
+    <div id="dictate-raw-box">
+      <div id="dictate-raw-label">Raw transcript</div>
+      <div id="dictate-raw-text"></div>
+    </div>
+    <div id="dictate-cleaning">✦ Cleaning up with Claude…</div>
+    <div id="dictate-result-box">
+      <textarea id="dictate-result-ta" placeholder="Cleaned transcription will appear here…"></textarea>
+      <select class="minput" id="dictate-dest-sel" style="margin-bottom:10px;font-size:13px;">
+        <option value="scene">Current Scene (writing canvas)</option>
+        <option value="note">New Note (Notes panel)</option>
+        <option value="subplot">New Subplot</option>
+        <option value="synopsis_premise">Synopsis — Series Premise</option>
+        <option value="synopsis_book">Synopsis — Current Book</option>
+      </select>
+      <div class="mbtn-row">
+        <button class="mbtn secondary" id="dictate-retry-btn">🎙 Dictate again</button>
+        <button class="mbtn primary" id="dictate-save-btn">Save</button>
+      </div>
     </div>
   </div>
 </div>
@@ -1129,6 +1171,30 @@ function applySmartQuotes(text,before){
   return text;
 }
 
+function convertExistingQuotes(){
+  const ed=document.getElementById('scene-editor');
+  if(!ed){toast('No scene open.');return;}
+  // Walk all text nodes and replace straight quotes with curly equivalents
+  function processNode(node){
+    if(node.nodeType===3){
+      let t=node.textContent;
+      // Replace straight double quotes
+      t=t.replace(/(^|\s)"([^"]*?)"/g,'$1\u201c$2\u201d');
+      // Replace straight single quotes: opening after space/start, closing/apostrophe after letter
+      t=t.replace(/(\s|^)'(?=[^'\s])/g,'$1\u2018');
+      t=t.replace(/([a-zA-Z])'([a-zA-Z])/g,'$1\u2019$2'); // contractions
+      t=t.replace(/([^\s])'/g,'$1\u2019'); // closing
+      t=t.replace(/^'/,'$1\u2018'); // opening at very start
+      node.textContent=t;
+    } else {
+      node.childNodes.forEach(processNode);
+    }
+  }
+  processNode(ed);
+  saveEditorContent();
+  toast('Quotes converted ✓');
+}
+
 function saveEditorContent(){
   if(!selSceneId)return;
   const ed=document.getElementById('scene-editor');
@@ -1145,9 +1211,37 @@ function saveEditorContent(){
 document.addEventListener('DOMContentLoaded',()=>{
   const ed=document.getElementById('scene-editor');
   if(!ed)return;
-  ed.addEventListener('input',function(){
+  ed.addEventListener('input',function(e){
     saveEditorContent();
     updateFmtBar();
+
+    // Mobile-compatible smart quotes — catch AFTER the character is inserted
+    // Works on Android file:// and served pages alike — no inputType dependency
+    if(smartQuotes){
+      const sel=window.getSelection();
+      if(sel&&sel.rangeCount){
+        const range=sel.getRangeAt(0);
+        const node=range.startContainer;
+        if(node.nodeType===3){
+          const offset=range.startOffset;
+          const t=node.textContent;
+          const justTyped=t[offset-1];
+          if(justTyped==="'"||justTyped==='"'){
+            const before=t.slice(0,offset-1);
+            const replacement=applySmartQuotes(justTyped,before);
+            if(replacement!==justTyped){
+              node.textContent=before+replacement+t.slice(offset);
+              const newRange=document.createRange();
+              newRange.setStart(node,offset);
+              newRange.collapse(true);
+              sel.removeAllRanges();sel.addRange(newRange);
+              saveEditorContent();
+            }
+          }
+        }
+      }
+    }
+
     // @mention detection
     const sel=window.getSelection();
     if(!sel.rangeCount)return;
@@ -1164,8 +1258,8 @@ document.addEventListener('DOMContentLoaded',()=>{
     if(mentionState)renderMentionDrop(getMentionFiltered(mentionState.q));
   });
   ed.addEventListener('keydown',function(e){
-    // Smart quotes
-    if(smartQuotes&&(e.key==='"'||e.key==="'")){
+    // Smart quotes via keydown (desktop fallback — mobile uses input event above)
+    if(smartQuotes&&(e.key==='"'||e.key==="'")&&e.key!=='Unidentified'){
       e.preventDefault();
       const sel=window.getSelection();
       const before=sel.rangeCount?sel.getRangeAt(0).startContainer.textContent.slice(0,sel.getRangeAt(0).startOffset):'';
@@ -2180,6 +2274,7 @@ function renderMobMore(){
 
   // Navigate
   makeSection('Navigate');
+  makeBtn('Dictate 🎙','🎙',()=>openDictateModal());
   makeBtn('Subplots & Side Notes','🧵',()=>setMobTab('subplots'));
   makeBtn('World Elements','🌍',()=>setMobTab('world'));
   makeBtn('Synopsis','📝',()=>setMobTab('synopsis'));
@@ -2994,6 +3089,196 @@ document.getElementById('import-file-input').addEventListener('change',function(
   reader.onload=e=>{try{setAppData(JSON.parse(e.target.result));toast('Imported ✓');closeModal('drive-modal');}catch{driveLog('Invalid file.');}};
   reader.readAsText(file);
 });
+
+// ══════════════════════════════════════════════
+// DICTATION — speech to text via Web Speech API
+// ══════════════════════════════════════════════
+(function(){
+  const ANTHROPIC_API='https://api.anthropic.com/v1/messages';
+
+  // Vocabulary Claude will use to correct the raw transcript
+  const VOCAB_CONTEXT=`
+The speaker is dictating notes for a historical fantasy novel set in Roman Britain (AD 112).
+Key proper nouns to watch for and correct if misheard:
+Characters: Titus Nemorius Taranicus, Hildr (also called Mathildr Nequnda Germanica), Lucius Cassianus Maro, Andraste (goddess).
+Places: Abona (Sea Mills, Bristol), Aquae Sulis (Bath), Glevum (Gloucester), Londinium, Eboracum.
+Roman terms: beneficiarius, peregrini, infamis, corbita, caupona, numina, draugr, optio, auxiliaries, Magister.
+Celtic/Germanic terms: druid, shapeshifter, seer, Leuyatan.
+Correct punctuation, add paragraph breaks where natural pauses suggest them, and fix any obvious misheard words using this vocabulary. Do not add or invent any content — only clean what was said.
+`.trim();
+
+  let recognition=null;
+  let isRecording=false;
+  let fullTranscript='';
+
+  function openDictateModal(){
+    document.getElementById('dictate-modal').classList.add('open');
+    resetDictate();
+  }
+  function closeDictateModal(){
+    stopRecording();
+    document.getElementById('dictate-modal').classList.remove('open');
+  }
+  function resetDictate(){
+    isRecording=false;fullTranscript='';
+    document.getElementById('dictate-orb').classList.remove('recording');
+    document.getElementById('dictate-orb').textContent='🎙';
+    document.getElementById('dictate-status').textContent='Tap the microphone to begin';
+    document.getElementById('dictate-raw-box').style.display='none';
+    document.getElementById('dictate-raw-text').textContent='';
+    document.getElementById('dictate-cleaning').style.display='none';
+    document.getElementById('dictate-result-box').style.display='none';
+    document.getElementById('dictate-result-ta').value='';
+  }
+
+  // Wire up open buttons — desktop toolbar + mobile More menu
+  document.getElementById('btn-dictate').addEventListener('click', openDictateModal);
+  document.getElementById('dictate-modal-close').addEventListener('click', closeDictateModal);
+  document.getElementById('dictate-retry-btn').addEventListener('click', resetDictate);
+
+  // Orb — toggle recording
+  document.getElementById('dictate-orb').addEventListener('click',()=>{
+    if(!('webkitSpeechRecognition' in window||'SpeechRecognition' in window)){
+      document.getElementById('dictate-status').textContent='⚠ Speech recognition not supported in this browser. Try Chrome.';
+      return;
+    }
+    if(isRecording){stopRecording();}
+    else{startRecording();}
+  });
+
+  function startRecording(){
+    const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+    recognition=new SR();
+    recognition.lang='en-GB';
+    recognition.continuous=true;
+    recognition.interimResults=true;
+    recognition.maxAlternatives=1;
+
+    fullTranscript='';
+    isRecording=true;
+    document.getElementById('dictate-orb').classList.add('recording');
+    document.getElementById('dictate-orb').textContent='⏹';
+    document.getElementById('dictate-status').textContent='Listening… tap ⏹ when done';
+    document.getElementById('dictate-raw-box').style.display='';
+    document.getElementById('dictate-result-box').style.display='none';
+    document.getElementById('dictate-cleaning').style.display='none';
+
+    let interimText='';
+    recognition.onresult=(e)=>{
+      let interim='';let final='';
+      for(let i=e.resultIndex;i<e.results.length;i++){
+        if(e.results[i].isFinal){final+=e.results[i][0].transcript+' ';}
+        else{interim+=e.results[i][0].transcript;}
+      }
+      fullTranscript+=final;
+      interimText=interim;
+      document.getElementById('dictate-raw-text').textContent=fullTranscript+interim;
+    };
+
+    recognition.onerror=(e)=>{
+      document.getElementById('dictate-status').textContent='⚠ Mic error: '+e.error;
+      isRecording=false;
+      document.getElementById('dictate-orb').classList.remove('recording');
+      document.getElementById('dictate-orb').textContent='🎙';
+    };
+
+    recognition.onend=()=>{
+      if(isRecording){
+        // Auto-restarted if still supposed to be recording (Chrome stops after ~60s)
+        recognition.start();
+      }
+    };
+
+    recognition.start();
+  }
+
+  function stopRecording(){
+    isRecording=false;
+    if(recognition){recognition.onend=null;recognition.stop();recognition=null;}
+    document.getElementById('dictate-orb').classList.remove('recording');
+    document.getElementById('dictate-orb').textContent='🎙';
+    if(fullTranscript.trim()){
+      document.getElementById('dictate-status').textContent='';
+      cleanWithClaude(fullTranscript.trim());
+    } else {
+      document.getElementById('dictate-status').textContent='Nothing recorded — tap the mic to try again';
+    }
+  }
+
+  async function cleanWithClaude(rawText){
+    document.getElementById('dictate-cleaning').style.display='';
+    document.getElementById('dictate-result-box').style.display='none';
+    try{
+      const resp=await fetch(ANTHROPIC_API,{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({
+          model:'claude-sonnet-4-20250514',
+          max_tokens:1000,
+          messages:[{
+            role:'user',
+            content:`${VOCAB_CONTEXT}\n\nPlease clean up this raw speech-to-text transcript. Return only the cleaned text, nothing else — no preamble, no explanation.\n\nRaw transcript:\n${rawText}`
+          }]
+        })
+      });
+      const data=await resp.json();
+      if(data.error)throw new Error(data.error.message);
+      const cleaned=data.content.filter(b=>b.type==='text').map(b=>b.text).join('').trim();
+      document.getElementById('dictate-result-ta').value=cleaned;
+      document.getElementById('dictate-cleaning').style.display='none';
+      document.getElementById('dictate-result-box').style.display='';
+    }catch(err){
+      document.getElementById('dictate-cleaning').style.display='none';
+      document.getElementById('dictate-status').textContent='⚠ Claude error: '+err.message+'. Raw text preserved.';
+      document.getElementById('dictate-result-ta').value=rawText;
+      document.getElementById('dictate-result-box').style.display='';
+    }
+  }
+
+  document.getElementById('dictate-save-btn').addEventListener('click',()=>{
+    const text=document.getElementById('dictate-result-ta').value.trim();
+    const dest=document.getElementById('dictate-dest-sel').value;
+    if(!text){toast('Nothing to save.');return;}
+    const dateStr=new Date().toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});
+
+    if(dest==='scene'){
+      if(selSceneId){
+        const sc=findNode(stories,selSceneId);
+        if(sc){
+          const existing=sc.content||'';
+          const newContent=existing+(existing?'<p><br></p>':'')+'<p>'+text.replace(/\n\n/g,'</p><p>').replace(/\n/g,'<br>')+'</p>';
+          stories=updateNode(stories,selSceneId,()=>({content:newContent,wordCount:cw(sc.content||'')+cw(text)}));
+          saveAll();render();closeDictateModal();toast('Added to scene ✓');return;
+        }
+      }
+      toast('No scene open — saved as note instead.');
+      notes.push({id:uid(),title:'Dictation — '+dateStr,content:text});
+    } else if(dest==='note'){
+      notes.push({id:uid(),title:'Dictation — '+dateStr,content:text});
+    } else if(dest==='subplot'){
+      subplots.push({id:uid(),title:'Dictation — '+dateStr,content:text,tags:[]});
+    } else if(dest==='synopsis_premise'){
+      syn.premise=(syn.premise?syn.premise+'\n\n':'')+text;lsS(SYNK,syn);
+    } else if(dest==='synopsis_book'){
+      const books=getAllBooks();
+      if(books.length){
+        const bSel=document.getElementById('syn-book-sel');
+        const bid=bSel&&bSel.value?bSel.value:books[0].book.id;
+        if(!syn.books)syn.books={};
+        syn.books[bid]=(syn.books[bid]?syn.books[bid]+'\n\n':'')+text;
+        lsS(SYNK,syn);
+      }
+    }
+    saveAll();render();closeDictateModal();
+    toast('Dictation saved ✓');
+    if(dest==='subplot'){switchView('subplots');}
+    else if(dest==='note'){const t=document.querySelector('.rp-tab[data-rp="notes"]');if(t)t.click();}
+  });
+
+  // Expose openDictateModal for mobile More menu
+  window.openDictateModal=openDictateModal;
+
+})();
 
 // ══════════════════════════════════════════════
 // PHOTO IMPORT — handwritten notes → Notes panel
